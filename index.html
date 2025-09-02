@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AnemiaAI - AI Model for Noninvasive Detection and Monitoring of Anemia</title>
+  <style>
+    /* =========================
+       THEME TOKENS (LIGHT/DRK)
+       ========================= */
+    :root{
+      /* Reds shared */
+      --red-50:#fff1f2; --red-100:#ffe4e6; --red-200:#fecdd3; --red-300:#fda4af;
+      --red-400:#fb7185; --red-500:#f43f5e; --red-600:#e11d48; --red-700:#be123c;
+      --red-800:#9f1239; --red-900:#881337;
+
+      /* LIGHT (default) */
+      --bg-canvas:#fff7f8;
+      --bg-elev:#ffffff;
+      --ink:#0f0a0a;
+      --ink-muted:#3a3a3acc;
+      --card-border:#00000012;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --g1: linear-gradient(120deg, #ff6b6b, #f43f5e 40%, #be123c 80%, #5b0a17);
+      --g2: linear-gradient(135deg, #ffb6bf, #ff8796 40%, #f43f5e);
+      --panel-mix: color-mix(in oklab, var(--bg-elev) 100%, #ffffff 0%);
+      --hero-top: #fff7f8;
+      --hero-bot: #fff;
+      --frost: #ffffffd9;
+
+      --chip-bg:#be123c10;
+      --chip-ring:#f43f5e33;
+
+      --btn-secondary-bg:#ffffff;
+      --btn-secondary-ink:#b91c1c;
+    }
+
+    /* DARK overrides */
+    [data-theme="dark"]{
+      --bg-canvas:#120b0d;
+      --bg-elev:#151014;
+      --ink:#f8fafc;
+      --ink-muted:#e2e8f0cc;
+      --card-border:#ffffff1a;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --g1: linear-gradient(120deg, #ff6b6b, #f43f5e 40%, #be123c 80%, #5b0a17);
+      --g2: linear-gradient(135deg, #ffd1d6, #ff8796 40%, #f43f5e);
+      --panel-mix: color-mix(in oklab, var(--bg-elev) 86%, #ffffff 14%);
+      --hero-top:#180c10;
+      --hero-bot:#120b0d;
+      --frost:#0f0a0f;
+
+      --chip-bg:#f43f5e2a;
+      --chip-ring:#f43f5e33;
+
+      --btn-secondary-bg:#ffffff;
+      --btn-secondary-ink:#be123c;
+    }
+
+    /* Smooth theme transition */
+    .theme-anim *{ transition: background-color .25s ease, color .25s ease, border-color .25s ease, box-shadow .25s ease }
+
+    *{box-sizing:border-box; margin:0; padding:0}
+    html,body{height:100%}
+    body{
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      line-height:1.6; color:var(--ink); background: var(--bg-canvas);
+      overflow-x:hidden;
+    }
+
+    /* soft background accents (both themes) */
+    .bg-accents{
+      position:fixed; inset:-20vmax; z-index:-1; pointer-events:none; filter: blur(90px) saturate(120%);
+      background: conic-gradient(from 180deg at 50% 50%, #ff6b6b20, #e11d4830, #9f123930, #ff6b6b20);
+      animation: swirl 26s linear infinite;
+    }
+    @keyframes swirl{ 0%{transform:rotate(0)} 50%{transform:rotate(180deg) scale(1.06)} 100%{transform:rotate(360deg)} }
+    @media (prefers-reduced-motion: reduce){ .bg-accents{animation:none} }
+
+    .container{max-width:1200px; margin:0 auto; padding:0 24px}
+
+    /* Header */
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(12px) saturate(120%);
+      background: color-mix(in oklab, var(--bg-canvas) 65%, transparent);
+      border-bottom:1px solid var(--card-border);
+    }
+    .header-content{display:flex; align-items:center; justify-content:space-between; gap:24px; padding:14px 0}
+    .brand-section{display:flex; align-items:center; gap:16px}
+    .logo{
+      font-size:28px; font-weight:800; letter-spacing:-0.5px;
+      background: var(--g1); -webkit-background-clip:text; background-clip:text; color:transparent;
+      text-shadow: 0 6px 28px #f43f5e30;
+    }
+    .partner-logos{display:flex; flex-direction:column; gap:2px}
+    .partner-logo{font-size:11px; letter-spacing:.4px; text-transform:uppercase; color:var(--ink-muted)}
+    .mgb-logo{color:#1e88ff}
+    .mesh-logo{color:var(--ink-muted)}
+
+    nav ul{list-style:none; display:flex; gap:4px}
+    nav a{
+      position:relative; display:inline-block; color:var(--ink-muted);
+      text-decoration:none; font-weight:700; font-size:14px;
+      padding:10px 14px; border-radius:10px;
+      transition: transform .2s ease, color .2s ease, background .2s ease;
+    }
+    nav a:hover{color:var(--ink); background:#00000008}
+    [data-theme="dark"] nav a:hover{background:#ffffff10}
+    nav a.active{color:var(--ink)}
+    nav a.active::after, nav a:hover::after{
+      content:""; position:absolute; left:10px; right:10px; bottom:4px; height:2px;
+      background:var(--g1); border-radius:2px; box-shadow:0 0 18px #f43f5e80;
+    }
+
+    /* ===== Theme segmented control ===== */
+    .theme-segment{
+      display:inline-flex; align-items:center; border:1px solid var(--card-border);
+      background: var(--frost); border-radius:999px; padding:4px; gap:4px;
+    }
+    .theme-option{
+      display:inline-flex; align-items:center; gap:6px; border:0; cursor:pointer;
+      padding:6px 10px; border-radius:999px; background:transparent; color:var(--ink-muted);
+      font-weight:700; font-size:12px;
+    }
+    .theme-option[aria-pressed="true"]{
+      background: #00000008; color:var(--ink);
+      box-shadow: inset 0 0 0 1px var(--card-border);
+    }
+    [data-theme="dark"] .theme-option[aria-pressed="true"]{
+      background:#ffffff12;
+    }
+    .theme-option svg{width:16px; height:16px}
+
+    /* Sections */
+    main{margin-top:0}
+    .section{display:none}
+    .section.active{display:block}
+
+    /* Hero */
+    .hero{
+      position:relative; overflow:hidden; padding:120px 0 80px;
+      background: radial-gradient(800px 400px at 0% 0%, #be123c22 0%, transparent 70%),
+                 radial-gradient(900px 500px at 100% 0%, #e11d4820 0%, transparent 70%),
+                 linear-gradient(180deg, var(--hero-top) 0%, var(--hero-bot) 100%);
+      border-bottom:1px solid var(--card-border);
+    }
+    .hero-inner{display:grid; place-items:center; text-align:center; gap:22px}
+    .hero h1{
+      font-size: clamp(42px, 6vw, 86px); line-height:1.05; font-weight:900; letter-spacing:-1.5px;
+      background: var(--g1); -webkit-background-clip:text; background-clip:text; color:transparent;
+      filter: drop-shadow(0 8px 24px #f43f5e30);
+    }
+    .subtitle{max-width:900px; margin-inline:auto; font-size: clamp(18px, 2.4vw, 26px); color:var(--ink-muted)}
+
+    .partnership-badge{
+      display:inline-flex; align-items:center; gap:10px; padding:12px 18px; border-radius:999px;
+      background: var(--chip-bg); border:1px solid var(--chip-ring); color:var(--ink);
+      font-weight:700; text-transform:uppercase; letter-spacing:.8px;
+      box-shadow: var(--shadow);
+    }
+    [data-theme="dark"] .partnership-badge{color:#fff}
+
+    /* Section titles */
+    .section-header{text-align:center; margin-bottom:48px}
+    .section-title{
+      font-size: clamp(28px, 4vw, 44px); font-weight:900; letter-spacing:-.5px;
+      color:var(--ink);
+      background: linear-gradient(180deg, var(--ink), color-mix(in oklab, var(--ink) 84%, transparent));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .section-subtitle{color:var(--ink-muted); max-width:720px; margin:10px auto 0}
+
+    /* Stats */
+    .stats-section{padding:80px 0}
+    .stats-grid{display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:22px}
+    .stat-card{
+      background: var(--panel-mix); border:1px solid var(--card-border);
+      padding:28px; border-radius:16px; box-shadow: var(--shadow);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; position:relative; overflow:hidden;
+    }
+    .stat-card::before{content:""; position:absolute; inset:-1px; height:38%; background: var(--g1); filter: blur(40px); opacity:.12}
+    .stat-card:hover{transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,.15)}
+    [data-theme="dark"] .stat-card:hover{box-shadow: 0 20px 50px rgba(0,0,0,.45)}
+    .stat-number{
+      font-size: clamp(36px, 5vw, 56px); font-weight:900; line-height:1.1;
+      background: var(--g2); -webkit-background-clip:text; background-clip:text; color:transparent;
+      text-shadow: 0 8px 26px #f43f5e30;
+    }
+    .stat-label{color:var(--ink-muted); font-size:16px; margin-top:8px}
+
+    /* Content sections */
+    .content-section{padding:90px 0}
+    .content-grid{display:grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap:24px}
+    .content-card{
+      background: var(--panel-mix); border:1px solid var(--card-border);
+      padding:32px; border-radius:16px; box-shadow: var(--shadow);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .content-card:hover{transform: translateY(-4px)}
+    .content-card h3{
+      font-size:22px; font-weight:800; margin-bottom:12px; color:var(--ink);
+      padding-bottom:10px; display:inline-block; border-image: var(--g1) 1; border-bottom:3px solid transparent;
+    }
+    .content-card p, .content-card li{color:var(--ink-muted); font-size:16px}
+    .content-card ul{list-style:none; padding:0; margin:0}
+    .content-card li{position:relative; padding:10px 0 10px 28px}
+    .content-card li::before{
+      content:""; position:absolute; left:0; top:16px; width:10px; height:10px;
+      border-radius:50%; background: var(--g1); box-shadow:0 0 14px #f43f5e66;
+    }
+    .highlight{background: var(--chip-bg); color:var(--ink); padding:2px 8px; border-radius:999px; font-weight:800}
+    [data-theme="dark"] .highlight{color:#fff}
+
+    /* Team */
+    .team-grid{display:grid; grid-template-columns: repeat(auto-fit, minmax(260px,1fr)); gap:24px}
+    .team-member{
+      text-align:center; padding:28px; border-radius:16px;
+      background: var(--panel-mix); border:1px solid var(--card-border); box-shadow: var(--shadow);
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .team-member h4{font-size:20px; font-weight:800; color:var(--ink); margin-bottom:6px}
+    .team-member p{color:var(--ink-muted)}
+
+    /* Contact */
+    .contact-form{
+      max-width:760px; margin:0 auto; background: var(--panel-mix);
+      border:1px solid var(--card-border); border-radius:16px; padding:36px; box-shadow: var(--shadow);
+    }
+    .form-group{margin-bottom:18px}
+    .form-group label{
+      display:block; color:var(--ink); margin-bottom:8px; font-size:13px; letter-spacing:.5px; text-transform:uppercase; opacity:.9
+    }
+    .form-group input,.form-group textarea{
+      width:100%; padding:14px 16px; border-radius:12px; border:1px solid color-mix(in oklab, var(--ink) 10%, transparent);
+      background:#ffffff; color:#111;
+      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, color .2s ease;
+    }
+    [data-theme="dark"] .form-group input,[data-theme="dark"] .form-group textarea{
+      background:#0f0a0f; color:#fff; border:1px solid #ffffff1f;
+    }
+    .form-group input:focus,.form-group textarea:focus{
+      outline:none; border-color:#f43f5e80; box-shadow:0 0 0 4px #f43f5e25
+    }
+
+    .btn-primary{
+      appearance:none; border:0; cursor:pointer; width:100%;
+      padding:16px 22px; font-weight:900; letter-spacing:.6px; text-transform:uppercase;
+      border-radius:14px; color:#fff; background: var(--g1);
+      box-shadow: 0 12px 30px #f43f5e40, inset 0 -2px 0 #ffffff22;
+      transition: transform .15s ease, box-shadow .2s ease, filter .2s ease;
+    }
+    .btn-primary:hover{transform: translateY(-2px)}
+    .btn-primary:active{transform: translateY(0) scale(.99)}
+
+    /* CTA */
+    .cta-section{
+      padding:80px 0; text-align:center;
+      background: linear-gradient(180deg, var(--bg-canvas), color-mix(in oklab, var(--bg-canvas) 80%, #be123c15));
+      border-top:1px solid var(--card-border); border-bottom:1px solid var(--card-border);
+    }
+    .cta-section h2{font-size: clamp(28px,4.4vw,42px); font-weight:900; letter-spacing:-.5px; color:var(--ink)}
+    .cta-section p{color:var(--ink-muted); font-size:18px; margin:10px 0 24px}
+    .btn-secondary{
+      display:inline-block; text-decoration:none; font-weight:900; letter-spacing:.6px; text-transform:uppercase;
+      padding:14px 24px; border-radius:999px; background:var(--btn-secondary-bg); color:var(--btn-secondary-ink);
+      box-shadow: 0 14px 36px rgba(0,0,0,.06);
+      transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .btn-secondary:hover{transform: translateY(-2px); background:color-mix(in oklab, var(--btn-secondary-bg) 94%, #f43f5e 6%)}
+
+    /* Footer */
+    footer{background: color-mix(in oklab, var(--bg-canvas) 92%, #000 8%); border-top:1px solid var(--card-border); color:var(--ink-muted); text-align:center; padding:40px 0}
+    .footer-content p:first-child{color:var(--ink); font-weight:700}
+
+    /* Responsive */
+    @media (max-width: 920px){
+      .header-content{flex-wrap:wrap; gap:12px; padding:10px 0}
+      nav ul{flex-wrap:wrap; justify-content:center; order:3; width:100%}
+    }
+    @media (max-width:480px){
+      .container{padding:0 18px}
+      .hero{padding:90px 0 64px}
+      .content-card,.team-member,.stat-card{padding:22px}
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-accents" aria-hidden="true"></div>
+
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="brand-section">
+          <div class="partner-logos">
+            <div class="partner-logo mgb-logo">Mass General Brigham</div>
+            <div class="partner-logo mesh-logo">MESH Incubator</div>
+          </div>
+          <div class="logo">AnemiaAI</div>
+        </div>
+
+        <nav aria-label="Primary">
+          <ul>
+            <li><a href="#" onclick="showSection(event,'home')" class="nav-link active">Home</a></li>
+            <li><a href="#" onclick="showSection(event,'about')" class="nav-link">About</a></li>
+            <li><a href="#" onclick="showSection(event,'contact')" class="nav-link">Contact</a></li>
+            <li><a href="#" onclick="showSection(event,'careers')" class="nav-link">Careers</a></li>
+          </ul>
+        </nav>
+
+        <!-- Theme segmented control: Auto / Light / Dark -->
+        <div class="theme-segment" role="group" aria-label="Theme mode">
+          <button class="theme-option" id="optAuto"  type="button" aria-pressed="true"  title="Follow system">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+            Auto
+          </button>
+          <button class="theme-option" id="optLight" type="button" aria-pressed="false" title="Light theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"/>
+            </svg>
+            Light
+          </button>
+          <button class="theme-option" id="optDark"  type="button" aria-pressed="false" title="Dark theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+            Dark
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HOME -->
+    <section id="home" class="section active">
+      <div class="hero">
+        <div class="container">
+          <div class="hero-inner">
+            <h1>AnemiaAI</h1>
+            <p class="subtitle">AI Model for Noninvasive Detection and Monitoring of Anemia</p>
+            <div class="partnership-badge" role="status">
+              Partnership with Mass General Brigham &amp; MESH Incubator
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-section">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">Anemia: A Global Health Challenge</h2>
+            <p class="section-subtitle">Understanding the widespread impact and urgent need for accessible detection methods</p>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-number">22.8%</div>
+              <div class="stat-label">of people worldwide will develop anemia during their lifetime</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">42%</div>
+              <div class="stat-label">of children under 5 years are anemic globally according to WHO data</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">$9.2B</div>
+              <div class="stat-label">annual Medicare spending on laboratory services in the United States</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-number">$147.73</div>
+              <div class="stat-label">daily cost per patient for phlebotomy procedures in healthcare facilities</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">Transforming Anemia Detection</h2>
+            <p class="section-subtitle">Revolutionary AI technology making anemia screening accessible worldwide</p>
+          </div>
+
+          <div class="content-grid">
+            <div class="content-card">
+              <h3>The Current Problem</h3>
+              <ul>
+                <li>Anemia affects <span class="highlight">nearly 1 in 4 people globally</span>, representing a major public health concern</li>
+                <li>Blood tests remain the only available diagnostic method for anemia detection</li>
+                <li>Laboratory testing is expensive and often inaccessible in underserved regions</li>
+                <li>Point-of-care testing accuracy decreases to 70% under field conditions</li>
+                <li>Healthcare systems face significant costs from daily phlebotomy procedures</li>
+              </ul>
+            </div>
+
+            <div class="content-card">
+              <h3>Our AI-Powered Solution</h3>
+              <ul>
+                <li><span class="highlight">Smartphone camera technology</span> enables detection using standard mobile devices</li>
+                <li>Advanced AI algorithms analyze eye images for accurate anemia screening</li>
+                <li>Completely noninvasive approach eliminates need for blood draws</li>
+                <li>Cost-effective solution accessible in any location with smartphone connectivity</li>
+                <li>Longitudinal monitoring capabilities support ongoing patient care</li>
+              </ul>
+            </div>
+
+            <div class="content-card">
+              <h3>Telemedicine Applications</h3>
+              <ul>
+                <li>Seamless integration with existing patient portals and healthcare gateways</li>
+                <li>Standard screening component for annual physical examinations</li>
+                <li>Regular monitoring for patients receiving anticoagulation therapy</li>
+                <li>Continuous assessment support for oncology patients during treatment</li>
+                <li>Monitoring capabilities for patients with chronic kidney disease</li>
+              </ul>
+            </div>
+
+            <div class="content-card">
+              <h3>Global Health Impact</h3>
+              <ul>
+                <li>Serving populations in underserved areas without laboratory facilities</li>
+                <li>Supporting the <span class="highlight">40% of pregnant women</span> at risk for anemia worldwide</li>
+                <li>Enabling pediatric screening programs in developing regions</li>
+                <li>Reducing healthcare disparities through accessible diagnostic technology</li>
+                <li>Facilitating cost-effective population-level health screening initiatives</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cta-section">
+        <div class="container">
+          <h2>Revolutionizing Healthcare Access</h2>
+          <p>Join us in making anemia detection accessible to everyone, everywhere.</p>
+          <a href="#" onclick="showSection(event,'contact')" class="btn-secondary">Get In Touch</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="section">
+      <div class="content-section">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">About AnemiaAI</h2>
+            <p class="section-subtitle">Pioneering the future of anemia detection through innovative artificial intelligence</p>
+          </div>
+
+          <div class="content-grid">
+            <div class="content-card">
+              <h3>Our Mission</h3>
+              <p>To eliminate barriers to anemia detection by developing accessible, accurate, and affordable screening technology. We are dedicated to improving global health outcomes through groundbreaking AI solutions that can reach underserved populations and transform healthcare delivery worldwide.</p>
+            </div>
+
+            <div class="content-card">
+              <h3>Advanced Technology</h3>
+              <p>Our proprietary artificial intelligence model processes eye images captured by standard smartphone cameras to detect and monitor anemia with clinical accuracy. This innovative approach maintains diagnostic precision while completely eliminating the need for invasive blood draws.</p>
+            </div>
+
+            <div class="content-card">
+              <h3>Clinical Excellence</h3>
+              <p>Through partnerships with Mass General Brigham and participation in the MESH Incubator program, we ensure our technology meets the highest standards of clinical validation, regulatory compliance, and medical excellence required for healthcare innovation.</p>
+            </div>
+
+            <div class="content-card">
+              <h3>Global Impact Vision</h3>
+              <p>Our technology has the potential to transform healthcare access for millions worldwide, from pregnant women in resource-constrained environments to cancer patients requiring regular monitoring, creating a more equitable healthcare landscape.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section">
+      <div class="content-section">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">Contact Our Team</h2>
+            <p class="section-subtitle">Connect with AnemiaAI to explore collaboration opportunities and learn more about our technology</p>
+          </div>
+
+          <div class="contact-form">
+            <form id="contactForm">
+              <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required autocomplete="name">
+              </div>
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required autocomplete="email">
+              </div>
+              <div class="form-group">
+                <label for="organization">Organization</label>
+                <input type="text" id="organization" name="organization" autocomplete="organization">
+              </div>
+              <div class="form-group">
+                <label for="subject">Subject</label>
+                <input type="text" id="subject" name="subject" required>
+              </div>
+              <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" rows="6" required></textarea>
+              </div>
+              <button type="submit" class="btn-primary">Send Message</button>
+            </form>
+          </div>
+
+          <div class="content-grid" style="margin-top: 40px;">
+            <div class="content-card">
+              <h3>General Inquiries</h3>
+              <p>For questions about AnemiaAI technology, research findings, and general information, please use our contact form or reach out directly to our team.</p>
+            </div>
+            <div class="content-card">
+              <h3>Partnership Development</h3>
+              <p>We actively seek collaborations with healthcare institutions, technology partners, medical device companies, and research organizations committed to advancing anemia detection technology.</p>
+            </div>
+            <div class="content-card">
+              <h3>Research Collaboration</h3>
+              <p>Academic institutions interested in clinical studies, validation research, and collaborative development opportunities are encouraged to connect with our research team.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAREERS -->
+    <section id="careers" class="section">
+      <div class="content-section">
+        <div class="container">
+          <div class="section-header">
+            <h2 class="section-title">Join Our Mission</h2>
+            <p class="section-subtitle">Help transform global healthcare through innovative anemia detection technology</p>
+          </div>
+
+          <div class="content-grid">
+            <div class="content-card">
+              <h3>Why Choose AnemiaAI</h3>
+              <ul>
+                <li>Make direct impact on global health through innovative medical technology</li>
+                <li>Work with cutting-edge artificial intelligence and medical imaging systems</li>
+                <li>Collaborate with leading medical institutions and healthcare researchers</li>
+                <li>Contribute to reducing healthcare disparities on a global scale</li>
+                <li>Professional growth opportunities in the rapidly expanding healthcare technology sector</li>
+              </ul>
+            </div>
+
+            <div class="content-card">
+              <h3>Available Positions</h3>
+              <ul>
+                <li><strong>Machine Learning Engineer</strong> - Computer Vision &amp; Medical AI Development</li>
+                <li><strong>Clinical Research Coordinator</strong> - Study Design &amp; Clinical Validation</li>
+                <li><strong>Mobile Application Developer</strong> - iOS/Android Platform Development</li>
+                <li><strong>Regulatory Affairs Specialist</strong> - FDA Compliance &amp; Medical Device Regulation</li>
+                <li><strong>Business Development Manager</strong> - Healthcare Partnership Development</li>
+              </ul>
+            </div>
+
+            <div class="content-card">
+              <h3>Ideal Candidates</h3>
+              <ul>
+                <li>Demonstrated passion for healthcare innovation and technology advancement</li>
+                <li>Relevant experience in AI/ML, mobile development, or medical device industry</li>
+                <li>Strong communication skills and collaborative work approach</li>
+                <li>Commitment to improving patient outcomes and healthcare accessibility</li>
+                <li>Interest in addressing complex global health challenges</li>
+              </ul>
+            </div>
+
+            <div class="content-card">
+              <h3>Application Information</h3>
+              <p>To apply for any position, please send your resume and cover letter to <strong>careers@anemiaai.com</strong></p>
+              <p>Include the specific position title in your subject line and describe your motivation for joining our mission to revolutionize anemia detection technology.</p>
+              <p style="margin-top: 16px; font-weight: 700; background: linear-gradient(120deg, #ff6b6b, #f43f5e 40%, #be123c 80%, #5b0a17); -webkit-background-clip:text; background-clip:text; color:transparent;">
+                AnemiaAI is an equal opportunity employer committed to diversity, equity, and inclusion in all aspects of our organization.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <p>&copy; 2025 AnemiaAI. Advancing anemia detection through artificial intelligence innovation.</p>
+        <p>In partnership with Mass General Brigham and MESH Incubator</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function showSection(e, sectionName){
+      if(e) e.preventDefault();
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(sectionName).classList.add('active');
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      if(e && e.currentTarget) e.currentTarget.classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+
+    // Contact form feedback
+    const form = document.getElementById('contactForm');
+    if(form){
+      form.addEventListener('submit', function(ev){
+        ev.preventDefault();
+        const btn = this.querySelector('.btn-primary');
+        const original = btn.textContent;
+        btn.textContent = 'Message Sent Successfully!';
+        btn.style.background = 'linear-gradient(120deg,#22c55e,#16a34a)';
+        setTimeout(()=>{
+          btn.textContent = original;
+          btn.style.background = '';
+          this.reset();
+        }, 2600);
+      });
+    }
+
+    // ======== Theme logic (Auto / Light / Dark) ========
+    const STORAGE_KEY = 'anemiaai-theme-mode'; // values: 'auto' | 'light' | 'dark'
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const optAuto  = document.getElementById('optAuto');
+    const optLight = document.getElementById('optLight');
+    const optDark  = document.getElementById('optDark');
+
+    // Apply theme depending on mode; keep live listener only in 'auto'
+    function applyTheme(mode){
+      // animate transition
+      document.documentElement.classList.add('theme-anim');
+      setTimeout(()=>document.documentElement.classList.remove('theme-anim'), 300);
+
+      // Set pressed states
+      [optAuto, optLight, optDark].forEach(b => b.setAttribute('aria-pressed','false'));
+      if(mode === 'auto') optAuto.setAttribute('aria-pressed','true');
+      if(mode === 'light') optLight.setAttribute('aria-pressed','true');
+      if(mode === 'dark') optDark.setAttribute('aria-pressed','true');
+
+      // compute theme
+      const theme = (mode === 'auto') ? (media.matches ? 'dark' : 'light') : mode;
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-mode', mode);
+
+      // manage listener
+      media.removeEventListener?.('change', onSystemChange);
+      if(mode === 'auto'){
+        media.addEventListener?.('change', onSystemChange);
+      }
+    }
+
+    function onSystemChange(e){
+      if(localStorage.getItem(STORAGE_KEY) === 'auto'){
+        const next = e.matches ? 'dark' : 'light';
+        document.documentElement.classList.add('theme-anim');
+        document.documentElement.setAttribute('data-theme', next);
+        setTimeout(()=>document.documentElement.classList.remove('theme-anim'), 300);
+      }
+    }
+
+    // init: localStorage -> default 'auto'
+    (function initTheme(){
+      const stored = localStorage.getItem(STORAGE_KEY) || 'auto';
+      applyTheme(stored);
+    })();
+
+    // handlers
+    optAuto.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'auto');  applyTheme('auto');  });
+    optLight.addEventListener('click', ()=>{ localStorage.setItem(STORAGE_KEY,'light'); applyTheme('light'); });
+    optDark.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'dark');  applyTheme('dark');  });
+
+    // Smooth scroll for anchor fragments (if added later)
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          const target = document.querySelector(this.getAttribute('href'));
+          if (target) { e.preventDefault(); target.scrollIntoView({behavior:'smooth', block:'start'}); }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
