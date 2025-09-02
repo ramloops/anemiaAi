@@ -113,24 +113,29 @@
       background:var(--g1); border-radius:2px; box-shadow:0 0 18px #f43f5e80;
     }
 
-    /* ===== Theme segmented control ===== */
-    .theme-segment{
-      display:inline-flex; align-items:center; border:1px solid var(--card-border);
-      background: var(--frost); border-radius:999px; padding:4px; gap:4px;
+    /* ========= ICON-ONLY THEME SWITCH (TOP-RIGHT) ========= */
+    .theme-icons{
+      position:fixed; top:10px; right:10px; z-index:60;
+      display:flex; gap:8px; padding:6px;
+      border-radius:999px; border:1px solid var(--card-border);
+      background: var(--frost); backdrop-filter: blur(12px) saturate(120%);
+      box-shadow: 0 8px 24px rgba(0,0,0,.08);
     }
-    .theme-option{
-      display:inline-flex; align-items:center; gap:6px; border:0; cursor:pointer;
-      padding:6px 10px; border-radius:999px; background:transparent; color:var(--ink-muted);
-      font-weight:700; font-size:12px;
+    [data-theme="dark"] .theme-icons{box-shadow: 0 8px 24px rgba(0,0,0,.35)}
+    .theme-btn{
+      width:36px; height:36px; display:grid; place-items:center;
+      border-radius:999px; border:1px solid transparent; background:transparent; cursor:pointer;
+      color:var(--ink-muted);
+      transition: transform .15s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
     }
-    .theme-option[aria-pressed="true"]{
-      background: #00000008; color:var(--ink);
-      box-shadow: inset 0 0 0 1px var(--card-border);
+    .theme-btn:hover{background:#0000000a}
+    [data-theme="dark"] .theme-btn:hover{background:#ffffff12}
+    .theme-btn[aria-pressed="true"]{
+      color:var(--ink); border-color:var(--card-border); box-shadow: inset 0 0 0 1px var(--card-border);
+      background:#00000008;
     }
-    [data-theme="dark"] .theme-option[aria-pressed="true"]{
-      background:#ffffff12;
-    }
-    .theme-option svg{width:16px; height:16px}
+    [data-theme="dark"] .theme-btn[aria-pressed="true"]{background:#ffffff12}
+    .theme-btn svg{width:18px; height:18px}
 
     /* Sections */
     main{margin-top:0}
@@ -273,12 +278,9 @@
     footer{background: color-mix(in oklab, var(--bg-canvas) 92%, #000 8%); border-top:1px solid var(--card-border); color:var(--ink-muted); text-align:center; padding:40px 0}
     .footer-content p:first-child{color:var(--ink); font-weight:700}
 
-    /* Responsive */
-    @media (max-width: 920px){
-      .header-content{flex-wrap:wrap; gap:12px; padding:10px 0}
-      nav ul{flex-wrap:wrap; justify-content:center; order:3; width:100%}
-    }
-    @media (max-width:480px){
+    /* Responsive: keep icons accessible */
+    @media (max-width: 480px){
+      .theme-icons{top:8px; right:8px}
       .container{padding:0 18px}
       .hero{padding:90px 0 64px}
       .content-card,.team-member,.stat-card{padding:22px}
@@ -288,13 +290,35 @@
 <body>
   <div class="bg-accents" aria-hidden="true"></div>
 
+  <!-- ICON-ONLY THEME SWITCHER -->
+  <div class="theme-icons" role="group" aria-label="Theme mode">
+    <button class="theme-btn" id="btnAuto" type="button" aria-pressed="false" title="Auto (follow system)" aria-label="Auto theme">
+      <!-- Sun with rays (auto) -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+      </svg>
+    </button>
+    <button class="theme-btn" id="btnLight" type="button" aria-pressed="false" title="Light" aria-label="Light theme">
+      <!-- Sun (solid) -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/>
+      </svg>
+    </button>
+    <button class="theme-btn" id="btnDark" type="button" aria-pressed="true" title="Dark" aria-label="Dark theme">
+      <!-- Moon -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+  </div>
+
   <header>
     <div class="container">
       <div class="header-content">
         <div class="brand-section">
           <div class="partner-logos">
-            <div class="partner-logo mgb-logo">Mass General Brigham</div>
-            <div class="partner-logo mesh-logo">MESH Incubator</div>
+        <!--    <div class="partner-logo mgb-logo">Mass General Brigham</div> -->
+           <!-- <div class="partner-logo mesh-logo">MESH Incubator</div> -->
           </div>
           <div class="logo">AnemiaAI</div>
         </div>
@@ -307,28 +331,6 @@
             <li><a href="#" onclick="showSection(event,'careers')" class="nav-link">Careers</a></li>
           </ul>
         </nav>
-
-        <!-- Theme segmented control: Auto / Light / Dark -->
-        <div class="theme-segment" role="group" aria-label="Theme mode">
-          <button class="theme-option" id="optAuto"  type="button" aria-pressed="true"  title="Follow system">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-            </svg>
-            Auto
-          </button>
-          <button class="theme-option" id="optLight" type="button" aria-pressed="false" title="Light theme">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="5"/>
-            </svg>
-            Light
-          </button>
-          <button class="theme-option" id="optDark"  type="button" aria-pressed="false" title="Dark theme">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-            </svg>
-            Dark
-          </button>
-        </div>
       </div>
     </div>
   </header>
@@ -470,8 +472,28 @@
               <p>Our technology has the potential to transform healthcare access for millions worldwide, from pregnant women in resource-constrained environments to cancer patients requiring regular monitoring, creating a more equitable healthcare landscape.</p>
             </div>
           </div>
-        </div>
-      </div>
+  <div class="section-header" style="margin-top: 64px;">
+            <h2 class="section-title">Expert Research Team</h2>
+            <p class="section-subtitle">Multidisciplinary expertise spanning medicine, artificial intelligence, and healthcare technology</p>
+          </div>
+
+          <div class="team-grid">
+            <div class="team-member">
+              <h4>Dr. Ritchie Verma</h4>
+              <p>Internal Medicine Faculty<br>Massachusetts General Hospital</p>
+            </div>
+            <div class="team-member">
+              <h4>Dr. Marko Velimirovic</h4>
+              <p>Hematology/Oncology Fellow<br>Cleveland Clinic</p>
+            </div>
+            <div class="team-member">
+              <h4>Ram Dwarkanath</h4>
+              <p>Senior Data Engineer<br>Mass General Brigham</p>
+            </div>
+            <div class="team-member">
+              <h4>Dr. Jonathan Heflin</h4>
+              <p>Internal Medicine Faculty<br>Massachusetts General Hospital</p>
+            </div>
     </section>
 
     <!-- CONTACT -->
@@ -620,36 +642,33 @@
       });
     }
 
-    // ======== Theme logic (Auto / Light / Dark) ========
-    const STORAGE_KEY = 'anemiaai-theme-mode'; // values: 'auto' | 'light' | 'dark'
+    // ======== Icon-only Theme logic (Auto / Light / Dark) ========
+    const STORAGE_KEY = 'anemiaai-theme-mode'; // 'auto' | 'light' | 'dark'
     const media = window.matchMedia('(prefers-color-scheme: dark)');
 
-    const optAuto  = document.getElementById('optAuto');
-    const optLight = document.getElementById('optLight');
-    const optDark  = document.getElementById('optDark');
+    const btnAuto  = document.getElementById('btnAuto');
+    const btnLight = document.getElementById('btnLight');
+    const btnDark  = document.getElementById('btnDark');
 
-    // Apply theme depending on mode; keep live listener only in 'auto'
+    function setPressed(active){
+      [btnAuto, btnLight, btnDark].forEach(b => b.setAttribute('aria-pressed','false'));
+      (active === 'auto'  && btnAuto.setAttribute('aria-pressed','true'))  ||
+      (active === 'light' && btnLight.setAttribute('aria-pressed','true')) ||
+      (active === 'dark'  && btnDark.setAttribute('aria-pressed','true'));
+    }
+
     function applyTheme(mode){
-      // animate transition
+      // smooth transition
       document.documentElement.classList.add('theme-anim');
       setTimeout(()=>document.documentElement.classList.remove('theme-anim'), 300);
 
-      // Set pressed states
-      [optAuto, optLight, optDark].forEach(b => b.setAttribute('aria-pressed','false'));
-      if(mode === 'auto') optAuto.setAttribute('aria-pressed','true');
-      if(mode === 'light') optLight.setAttribute('aria-pressed','true');
-      if(mode === 'dark') optDark.setAttribute('aria-pressed','true');
-
-      // compute theme
+      setPressed(mode);
       const theme = (mode === 'auto') ? (media.matches ? 'dark' : 'light') : mode;
       document.documentElement.setAttribute('data-theme', theme);
       document.documentElement.setAttribute('data-mode', mode);
 
-      // manage listener
       media.removeEventListener?.('change', onSystemChange);
-      if(mode === 'auto'){
-        media.addEventListener?.('change', onSystemChange);
-      }
+      if(mode === 'auto'){ media.addEventListener?.('change', onSystemChange); }
     }
 
     function onSystemChange(e){
@@ -661,16 +680,16 @@
       }
     }
 
-    // init: localStorage -> default 'auto'
+    // Init: default to DARK (unless user saved something)
     (function initTheme(){
-      const stored = localStorage.getItem(STORAGE_KEY) || 'auto';
+      const stored = localStorage.getItem(STORAGE_KEY) || 'dark';
       applyTheme(stored);
     })();
 
-    // handlers
-    optAuto.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'auto');  applyTheme('auto');  });
-    optLight.addEventListener('click', ()=>{ localStorage.setItem(STORAGE_KEY,'light'); applyTheme('light'); });
-    optDark.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'dark');  applyTheme('dark');  });
+    // Click handlers
+    btnAuto.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'auto');  applyTheme('auto');  });
+    btnLight.addEventListener('click', ()=>{ localStorage.setItem(STORAGE_KEY,'light'); applyTheme('light'); });
+    btnDark.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'dark');  applyTheme('dark');  });
 
     // Smooth scroll for anchor fragments (if added later)
     document.addEventListener('DOMContentLoaded', () => {
@@ -683,4 +702,4 @@
     });
   </script>
 </body>
-</html>
+</html> 
