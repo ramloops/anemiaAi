@@ -86,44 +86,84 @@
       background: color-mix(in oklab, var(--bg-canvas) 65%, transparent);
       border-bottom:1px solid var(--card-border);
     }
-    .header-content{display:flex; align-items:center; justify-content:space-between; gap:24px; padding:14px 0}
+    .header-content{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0}
     .brand-section{display:flex; align-items:center; gap:16px}
     .logo{
       font-size:28px; font-weight:800; letter-spacing:-0.5px;
       background: var(--g1); -webkit-background-clip:text; background-clip:text; color:transparent;
       text-shadow: 0 6px 28px #f43f5e30;
     }
-    .partner-logos{display:flex; flex-direction:column; gap:2px}
-    .partner-logo{font-size:11px; letter-spacing:.4px; text-transform:uppercase; color:var(--ink-muted)}
-    .mgb-logo{color:#1e88ff}
-    .mesh-logo{color:var(--ink-muted)}
 
-    nav ul{list-style:none; display:flex; gap:4px}
-    nav a{
+    /* Navigation - Desktop */
+    .nav-desktop{display:flex; align-items:center; gap:16px}
+    .nav-desktop ul{list-style:none; display:flex; gap:4px}
+    .nav-desktop a{
       position:relative; display:inline-block; color:var(--ink-muted);
       text-decoration:none; font-weight:700; font-size:14px;
       padding:10px 14px; border-radius:10px;
       transition: transform .2s ease, color .2s ease, background .2s ease;
     }
-    nav a:hover{color:var(--ink); background:#00000008}
-    [data-theme="dark"] nav a:hover{background:#ffffff10}
-    nav a.active{color:var(--ink)}
-    nav a.active::after, nav a:hover::after{
+    .nav-desktop a:hover{color:var(--ink); background:#00000008}
+    [data-theme="dark"] .nav-desktop a:hover{background:#ffffff10}
+    .nav-desktop a.active{color:var(--ink)}
+    .nav-desktop a.active::after, .nav-desktop a:hover::after{
       content:""; position:absolute; left:10px; right:10px; bottom:4px; height:2px;
       background:var(--g1); border-radius:2px; box-shadow:0 0 18px #f43f5e80;
     }
 
-    /* ========= ICON-ONLY THEME SWITCH (TOP-RIGHT) ========= */
+    /* Mobile Navigation */
+    .mobile-nav-controls{display:none; align-items:center; gap:12px}
+    .hamburger-btn{
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      width:32px; height:32px; background:none; border:none; cursor:pointer; padding:0;
+    }
+    .hamburger-line{
+      width:20px; height:2px; background:var(--ink); border-radius:2px;
+      transition: all 0.3s ease; transform-origin:center;
+    }
+    .hamburger-line:not(:last-child){margin-bottom:4px}
+
+    .hamburger-btn.active .hamburger-line:nth-child(1){
+      transform: translateY(6px) rotate(45deg);
+    }
+    .hamburger-btn.active .hamburger-line:nth-child(2){
+      opacity:0;
+    }
+    .hamburger-btn.active .hamburger-line:nth-child(3){
+      transform: translateY(-6px) rotate(-45deg);
+    }
+
+    /* Mobile Menu Overlay */
+    .mobile-menu{
+      position:fixed; top:0; left:0; right:0; bottom:0; z-index:100;
+      background: var(--bg-canvas); backdrop-filter: blur(20px);
+      display:none; flex-direction:column; padding:80px 24px 24px;
+    }
+    .mobile-menu.active{display:flex}
+    .mobile-menu ul{list-style:none; display:flex; flex-direction:column; gap:8px}
+    .mobile-menu a{
+      display:block; color:var(--ink); text-decoration:none; font-weight:700; font-size:24px;
+      padding:16px 0; text-align:center;
+      transition: color .2s ease, transform .2s ease;
+    }
+    .mobile-menu a:hover{color:#f43f5e; transform:scale(1.05)}
+    .mobile-menu a.active{color:#f43f5e}
+
+    .mobile-menu-theme{
+      margin-top:auto; display:flex; justify-content:center;
+    }
+
+    /* Theme Icons - Desktop positioned, Mobile in menu */
     .theme-icons{
-      position:fixed; top:10px; right:10px; z-index:60;
-      display:flex; gap:8px; padding:6px;
+      position:fixed; top:16px; right:16px; z-index:60;
+      display:flex; gap:6px; padding:6px;
       border-radius:999px; border:1px solid var(--card-border);
       background: var(--frost); backdrop-filter: blur(12px) saturate(120%);
       box-shadow: 0 8px 24px rgba(0,0,0,.08);
     }
     [data-theme="dark"] .theme-icons{box-shadow: 0 8px 24px rgba(0,0,0,.35)}
     .theme-btn{
-      width:36px; height:36px; display:grid; place-items:center;
+      width:32px; height:32px; display:grid; place-items:center;
       border-radius:999px; border:1px solid transparent; background:transparent; cursor:pointer;
       color:var(--ink-muted);
       transition: transform .15s ease, background .2s ease, color .2s ease, border-color .2s ease, box-shadow .2s ease;
@@ -135,7 +175,32 @@
       background:#00000008;
     }
     [data-theme="dark"] .theme-btn[aria-pressed="true"]{background:#ffffff12}
-    .theme-btn svg{width:18px; height:18px}
+    .theme-btn svg{width:16px; height:16px}
+
+    /* Mobile Theme Icons (in menu) */
+    .theme-icons-mobile{
+      display:flex; gap:8px; padding:8px;
+      border-radius:999px; border:1px solid var(--card-border);
+      background: var(--panel-mix);
+    }
+    .theme-icons-mobile .theme-btn{width:36px; height:36px}
+    .theme-icons-mobile .theme-btn svg{width:18px; height:18px}
+
+    /* Responsive Navigation */
+    @media (max-width: 768px){
+      .nav-desktop{display:none}
+      .mobile-nav-controls{display:flex}
+      .theme-icons{display:none}
+      .container{padding:0 18px}
+      .header-content{gap:12px}
+      .logo{font-size:24px}
+    }
+
+    @media (max-width: 480px){
+      .logo{font-size:22px}
+      .hamburger-btn{width:28px; height:28px}
+      .hamburger-line{width:18px}
+    }
 
     /* Sections */
     main{margin-top:0}
@@ -278,59 +343,98 @@
     footer{background: color-mix(in oklab, var(--bg-canvas) 92%, #000 8%); border-top:1px solid var(--card-border); color:var(--ink-muted); text-align:center; padding:40px 0}
     .footer-content p:first-child{color:var(--ink); font-weight:700}
 
-    /* Responsive: keep icons accessible */
+    /* Mobile responsive adjustments */
     @media (max-width: 480px){
-      .theme-icons{top:8px; right:8px}
-      .container{padding:0 18px}
       .hero{padding:90px 0 64px}
       .content-card,.team-member,.stat-card{padding:22px}
+      .stats-section, .content-section{padding:60px 0}
+      .partnership-badge{font-size:11px; padding:10px 14px}
+      .mobile-menu{padding:70px 18px 18px}
     }
   </style>
 </head>
 <body>
   <div class="bg-accents" aria-hidden="true"></div>
 
-  <!-- ICON-ONLY THEME SWITCHER -->
+  <!-- DESKTOP THEME SWITCHER -->
   <div class="theme-icons" role="group" aria-label="Theme mode">
     <button class="theme-btn" id="btnAuto" type="button" aria-pressed="false" title="Auto (follow system)" aria-label="Auto theme">
-      <!-- Sun with rays (auto) -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
       </svg>
     </button>
     <button class="theme-btn" id="btnLight" type="button" aria-pressed="false" title="Light" aria-label="Light theme">
-      <!-- Sun (solid) -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="12" cy="12" r="5"/>
       </svg>
     </button>
     <button class="theme-btn" id="btnDark" type="button" aria-pressed="true" title="Dark" aria-label="Dark theme">
-      <!-- Moon -->
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
       </svg>
     </button>
   </div>
 
+  <!-- MOBILE MENU OVERLAY -->
+  <div class="mobile-menu" id="mobileMenu">
+    <nav>
+      <ul>
+        <li><a href="#" onclick="showSection(event,'home')" class="nav-link mobile-nav-link active">Home</a></li>
+        <li><a href="#" onclick="showSection(event,'about')" class="nav-link mobile-nav-link">About</a></li>
+        <li><a href="#" onclick="showSection(event,'contact')" class="nav-link mobile-nav-link">Contact</a></li>
+        <li><a href="#" onclick="showSection(event,'careers')" class="nav-link mobile-nav-link">Careers</a></li>
+      </ul>
+    </nav>
+    
+    <!-- MOBILE THEME SWITCHER -->
+    <div class="mobile-menu-theme">
+      <div class="theme-icons-mobile" role="group" aria-label="Theme mode">
+        <button class="theme-btn" id="btnAutoMobile" type="button" aria-pressed="false" title="Auto (follow system)" aria-label="Auto theme">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+        </button>
+        <button class="theme-btn" id="btnLightMobile" type="button" aria-pressed="false" title="Light" aria-label="Light theme">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+          </svg>
+        </button>
+        <button class="theme-btn" id="btnDarkMobile" type="button" aria-pressed="true" title="Dark" aria-label="Dark theme">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <header>
     <div class="container">
       <div class="header-content">
         <div class="brand-section">
-          <div class="partner-logos">
-        <!--    <div class="partner-logo mgb-logo">Mass General Brigham</div> -->
-           <!-- <div class="partner-logo mesh-logo">MESH Incubator</div> -->
-          </div>
           <div class="logo">AnemiaAI</div>
         </div>
 
-        <nav aria-label="Primary">
-          <ul>
-            <li><a href="#" onclick="showSection(event,'home')" class="nav-link active">Home</a></li>
-            <li><a href="#" onclick="showSection(event,'about')" class="nav-link">About</a></li>
-            <li><a href="#" onclick="showSection(event,'contact')" class="nav-link">Contact</a></li>
-            <li><a href="#" onclick="showSection(event,'careers')" class="nav-link">Careers</a></li>
-          </ul>
-        </nav>
+        <!-- DESKTOP NAVIGATION -->
+        <div class="nav-desktop">
+          <nav aria-label="Primary">
+            <ul>
+              <li><a href="#" onclick="showSection(event,'home')" class="nav-link active">Home</a></li>
+              <li><a href="#" onclick="showSection(event,'about')" class="nav-link">About</a></li>
+              <li><a href="#" onclick="showSection(event,'contact')" class="nav-link">Contact</a></li>
+              <li><a href="#" onclick="showSection(event,'careers')" class="nav-link">Careers</a></li>
+            </ul>
+          </nav>
+        </div>
+
+        <!-- MOBILE NAVIGATION CONTROLS -->
+        <div class="mobile-nav-controls">
+          <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle menu" aria-expanded="false">
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+            <div class="hamburger-line"></div>
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -494,6 +598,9 @@
               <h4>Dr. Jonathan Heflin</h4>
               <p>Internal Medicine Faculty<br>Massachusetts General Hospital</p>
             </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- CONTACT -->
@@ -616,6 +723,36 @@
   </footer>
 
   <script>
+    // Mobile menu toggle
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    hamburgerBtn.addEventListener('click', function() {
+      const isOpen = mobileMenu.classList.contains('active');
+      
+      if (isOpen) {
+        mobileMenu.classList.remove('active');
+        hamburgerBtn.classList.remove('active');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      } else {
+        mobileMenu.classList.add('active');
+        hamburgerBtn.classList.add('active');
+        hamburgerBtn.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+      }
+    });
+
+    // Close mobile menu when clicking on nav links
+    document.querySelectorAll('.mobile-nav-link').forEach(link => {
+      link.addEventListener('click', function() {
+        mobileMenu.classList.remove('active');
+        hamburgerBtn.classList.remove('active');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      });
+    });
+
     function showSection(e, sectionName){
       if(e) e.preventDefault();
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -642,23 +779,35 @@
       });
     }
 
-    // ======== Icon-only Theme logic (Auto / Light / Dark) ========
-    const STORAGE_KEY = 'anemiaai-theme-mode'; // 'auto' | 'light' | 'dark'
+    // ======== Theme logic (Auto / Light / Dark) ========
+    const STORAGE_KEY = 'anemiaai-theme-mode';
     const media = window.matchMedia('(prefers-color-scheme: dark)');
 
+    // Desktop buttons
     const btnAuto  = document.getElementById('btnAuto');
     const btnLight = document.getElementById('btnLight');
     const btnDark  = document.getElementById('btnDark');
 
+    // Mobile buttons
+    const btnAutoMobile  = document.getElementById('btnAutoMobile');
+    const btnLightMobile = document.getElementById('btnLightMobile');
+    const btnDarkMobile  = document.getElementById('btnDarkMobile');
+
     function setPressed(active){
+      // Desktop
       [btnAuto, btnLight, btnDark].forEach(b => b.setAttribute('aria-pressed','false'));
       (active === 'auto'  && btnAuto.setAttribute('aria-pressed','true'))  ||
       (active === 'light' && btnLight.setAttribute('aria-pressed','true')) ||
       (active === 'dark'  && btnDark.setAttribute('aria-pressed','true'));
+      
+      // Mobile
+      [btnAutoMobile, btnLightMobile, btnDarkMobile].forEach(b => b.setAttribute('aria-pressed','false'));
+      (active === 'auto'  && btnAutoMobile.setAttribute('aria-pressed','true'))  ||
+      (active === 'light' && btnLightMobile.setAttribute('aria-pressed','true')) ||
+      (active === 'dark'  && btnDarkMobile.setAttribute('aria-pressed','true'));
     }
 
     function applyTheme(mode){
-      // smooth transition
       document.documentElement.classList.add('theme-anim');
       setTimeout(()=>document.documentElement.classList.remove('theme-anim'), 300);
 
@@ -680,18 +829,23 @@
       }
     }
 
-    // Init: default to DARK (unless user saved something)
+    // Init theme
     (function initTheme(){
       const stored = localStorage.getItem(STORAGE_KEY) || 'dark';
       applyTheme(stored);
     })();
 
-    // Click handlers
+    // Desktop click handlers
     btnAuto.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'auto');  applyTheme('auto');  });
     btnLight.addEventListener('click', ()=>{ localStorage.setItem(STORAGE_KEY,'light'); applyTheme('light'); });
     btnDark.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'dark');  applyTheme('dark');  });
 
-    // Smooth scroll for anchor fragments (if added later)
+    // Mobile click handlers
+    btnAutoMobile.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'auto');  applyTheme('auto');  });
+    btnLightMobile.addEventListener('click', ()=>{ localStorage.setItem(STORAGE_KEY,'light'); applyTheme('light'); });
+    btnDarkMobile.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'dark');  applyTheme('dark');  });
+
+    // Smooth scroll for anchor fragments
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -702,4 +856,4 @@
     });
   </script>
 </body>
-</html> 
+</html>
