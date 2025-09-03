@@ -88,10 +88,24 @@
     }
     .header-content{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:14px 0}
     .brand-section{display:flex; align-items:center; gap:16px}
+
+    /* Logo (clickable) */
     .logo{
       font-size:28px; font-weight:800; letter-spacing:-0.5px;
       background: var(--g1); -webkit-background-clip:text; background-clip:text; color:transparent;
       text-shadow: 0 6px 28px #f43f5e30;
+      cursor:pointer;
+    }
+    .logo-link{
+      display:inline-block;
+      text-decoration:none;
+      padding:4px 6px;
+      border-radius:10px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .logo-link:focus-visible{
+      outline:2px solid #f43f5e66;
+      outline-offset:2px;
     }
 
     /* Navigation - Desktop */
@@ -122,20 +136,13 @@
       transition: all 0.3s ease; transform-origin:center;
     }
     .hamburger-line:not(:last-child){margin-bottom:4px}
-
-    .hamburger-btn.active .hamburger-line:nth-child(1){
-      transform: translateY(6px) rotate(45deg);
-    }
-    .hamburger-btn.active .hamburger-line:nth-child(2){
-      opacity:0;
-    }
-    .hamburger-btn.active .hamburger-line:nth-child(3){
-      transform: translateY(-6px) rotate(-45deg);
-    }
+    .hamburger-btn.active .hamburger-line:nth-child(1){ transform: translateY(6px) rotate(45deg); }
+    .hamburger-btn.active .hamburger-line:nth-child(2){ opacity:0; }
+    .hamburger-btn.active .hamburger-line:nth-child(3){ transform: translateY(-6px) rotate(-45deg); }
 
     /* Mobile Menu Overlay */
     .mobile-menu{
-      position:fixed; top:0; left:0; right:0; bottom:0; z-index:100;
+      position:fixed; top:0; left:0; right:0; bottom:0; z-index:500;
       background: var(--bg-canvas); backdrop-filter: blur(20px);
       display:none; flex-direction:column; padding:80px 24px 24px;
     }
@@ -149,13 +156,12 @@
     .mobile-menu a:hover{color:#f43f5e; transform:scale(1.05)}
     .mobile-menu a.active{color:#f43f5e}
 
-    .mobile-menu-theme{
-      margin-top:auto; display:flex; justify-content:center;
-    }
+    /* (Optional) Hide in-menu theme switcher since global one is always visible */
+    .mobile-menu-theme{ display:none; }
 
-    /* Theme Icons - Desktop positioned, Mobile in menu */
+    /* Theme Icons - Always visible (desktop + mobile) */
     .theme-icons{
-      position:fixed; top:16px; right:16px; z-index:60;
+      position:fixed; top:16px; right:16px; z-index:1000; /* above the mobile menu */
       display:flex; gap:6px; padding:6px;
       border-radius:999px; border:1px solid var(--card-border);
       background: var(--frost); backdrop-filter: blur(12px) saturate(120%);
@@ -177,25 +183,19 @@
     [data-theme="dark"] .theme-btn[aria-pressed="true"]{background:#ffffff12}
     .theme-btn svg{width:16px; height:16px}
 
-    /* Mobile Theme Icons (in menu) */
-    .theme-icons-mobile{
-      display:flex; gap:8px; padding:8px;
-      border-radius:999px; border:1px solid var(--card-border);
-      background: var(--panel-mix);
-    }
-    .theme-icons-mobile .theme-btn{width:36px; height:36px}
-    .theme-icons-mobile .theme-btn svg{width:18px; height:18px}
-
     /* Responsive Navigation */
     @media (max-width: 768px){
       .nav-desktop{display:none}
       .mobile-nav-controls{display:flex}
-      .theme-icons{display:none}
+      /* DO NOT HIDE .theme-icons on mobile anymore */
+      .theme-icons{ top:12px; right:12px; }
       .container{padding:0 18px}
       .header-content{gap:12px}
       .logo{font-size:24px}
     }
-
+@media (max-width: 768px){
+  .theme-icons{ top:auto; bottom:12px; right:12px; }
+}
     @media (max-width: 480px){
       .logo{font-size:22px}
       .hamburger-btn{width:28px; height:28px}
@@ -356,7 +356,7 @@
 <body>
   <div class="bg-accents" aria-hidden="true"></div>
 
-  <!-- DESKTOP THEME SWITCHER -->
+  <!-- GLOBAL THEME SWITCHER (ALWAYS VISIBLE) -->
   <div class="theme-icons" role="group" aria-label="Theme mode">
     <button class="theme-btn" id="btnAuto" type="button" aria-pressed="false" title="Auto (follow system)" aria-label="Auto theme">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -385,8 +385,8 @@
         <li><a href="#" onclick="showSection(event,'careers')" class="nav-link mobile-nav-link">Careers</a></li>
       </ul>
     </nav>
-    
-    <!-- MOBILE THEME SWITCHER -->
+
+    <!-- (Optional) In-menu theme switcher removed from view by CSS -->
     <div class="mobile-menu-theme">
       <div class="theme-icons-mobile" role="group" aria-label="Theme mode">
         <button class="theme-btn" id="btnAutoMobile" type="button" aria-pressed="false" title="Auto (follow system)" aria-label="Auto theme">
@@ -412,7 +412,10 @@
     <div class="container">
       <div class="header-content">
         <div class="brand-section">
-          <div class="logo">AnemiaAI</div>
+          <!-- CLICKABLE LOGO -->
+          <a href="#" class="logo-link" onclick="showSection(event,'home')" aria-label="Go to Home">
+            <span class="logo">AnemiaAI</span>
+          </a>
         </div>
 
         <!-- DESKTOP NAVIGATION -->
@@ -576,7 +579,8 @@
               <p>Our technology has the potential to transform healthcare access for millions worldwide, from pregnant women in resource-constrained environments to cancer patients requiring regular monitoring, creating a more equitable healthcare landscape.</p>
             </div>
           </div>
-  <div class="section-header" style="margin-top: 64px;">
+
+          <div class="section-header" style="margin-top: 64px;">
             <h2 class="section-title">Expert Research Team</h2>
             <p class="section-subtitle">Multidisciplinary expertise spanning medicine, artificial intelligence, and healthcare technology</p>
           </div>
@@ -726,22 +730,23 @@
     // Mobile menu toggle
     const hamburgerBtn = document.getElementById('hamburgerBtn');
     const mobileMenu = document.getElementById('mobileMenu');
-    
-    hamburgerBtn.addEventListener('click', function() {
-      const isOpen = mobileMenu.classList.contains('active');
-      
-      if (isOpen) {
-        mobileMenu.classList.remove('active');
-        hamburgerBtn.classList.remove('active');
-        hamburgerBtn.setAttribute('aria-expanded', 'false');
-        document.body.style.overflow = '';
-      } else {
-        mobileMenu.classList.add('active');
-        hamburgerBtn.classList.add('active');
-        hamburgerBtn.setAttribute('aria-expanded', 'true');
-        document.body.style.overflow = 'hidden';
-      }
-    });
+
+    if(hamburgerBtn){
+      hamburgerBtn.addEventListener('click', function() {
+        const isOpen = mobileMenu.classList.contains('active');
+        if (isOpen) {
+          mobileMenu.classList.remove('active');
+          hamburgerBtn.classList.remove('active');
+          hamburgerBtn.setAttribute('aria-expanded', 'false');
+          document.body.style.overflow = '';
+        } else {
+          mobileMenu.classList.add('active');
+          hamburgerBtn.classList.add('active');
+          hamburgerBtn.setAttribute('aria-expanded', 'true');
+          document.body.style.overflow = 'hidden';
+        }
+      });
+    }
 
     // Close mobile menu when clicking on nav links
     document.querySelectorAll('.mobile-nav-link').forEach(link => {
@@ -755,10 +760,29 @@
 
     function showSection(e, sectionName){
       if(e) e.preventDefault();
+
+      // Close mobile menu if open
+      if (mobileMenu.classList.contains('active')) {
+        mobileMenu.classList.remove('active');
+        hamburgerBtn.classList.remove('active');
+        hamburgerBtn.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      }
+
+      // Show the requested section
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.getElementById(sectionName).classList.add('active');
+
+      // Update navigation active states
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-      if(e && e.currentTarget) e.currentTarget.classList.add('active');
+
+      // Find and activate the corresponding nav links
+      const activeLink = document.querySelector(`.nav-link[onclick*="${sectionName}"]`);
+      if(activeLink) activeLink.classList.add('active');
+
+      const activeMobileLink = document.querySelector(`.mobile-nav-link[onclick*="${sectionName}"]`);
+      if(activeMobileLink) activeMobileLink.classList.add('active');
+
       window.scrollTo({top:0, behavior:'smooth'});
     }
 
@@ -783,28 +807,28 @@
     const STORAGE_KEY = 'anemiaai-theme-mode';
     const media = window.matchMedia('(prefers-color-scheme: dark)');
 
-    // Desktop buttons
+    // Desktop/global buttons
     const btnAuto  = document.getElementById('btnAuto');
     const btnLight = document.getElementById('btnLight');
     const btnDark  = document.getElementById('btnDark');
 
-    // Mobile buttons
+    // (Optional) in-menu buttons (kept functional even if hidden)
     const btnAutoMobile  = document.getElementById('btnAutoMobile');
     const btnLightMobile = document.getElementById('btnLightMobile');
     const btnDarkMobile  = document.getElementById('btnDarkMobile');
 
     function setPressed(active){
-      // Desktop
-      [btnAuto, btnLight, btnDark].forEach(b => b.setAttribute('aria-pressed','false'));
-      (active === 'auto'  && btnAuto.setAttribute('aria-pressed','true'))  ||
-      (active === 'light' && btnLight.setAttribute('aria-pressed','true')) ||
-      (active === 'dark'  && btnDark.setAttribute('aria-pressed','true'));
-      
-      // Mobile
-      [btnAutoMobile, btnLightMobile, btnDarkMobile].forEach(b => b.setAttribute('aria-pressed','false'));
-      (active === 'auto'  && btnAutoMobile.setAttribute('aria-pressed','true'))  ||
-      (active === 'light' && btnLightMobile.setAttribute('aria-pressed','true')) ||
-      (active === 'dark'  && btnDarkMobile.setAttribute('aria-pressed','true'));
+      // Desktop/global
+      [btnAuto, btnLight, btnDark].forEach(b => b && b.setAttribute('aria-pressed','false'));
+      (active === 'auto'  && btnAuto?.setAttribute('aria-pressed','true'))  ||
+      (active === 'light' && btnLight?.setAttribute('aria-pressed','true')) ||
+      (active === 'dark'  && btnDark?.setAttribute('aria-pressed','true'));
+
+      // Mobile (in-menu)
+      [btnAutoMobile, btnLightMobile, btnDarkMobile].forEach(b => b && b.setAttribute('aria-pressed','false'));
+      (active === 'auto'  && btnAutoMobile?.setAttribute('aria-pressed','true'))  ||
+      (active === 'light' && btnLightMobile?.setAttribute('aria-pressed','true')) ||
+      (active === 'dark'  && btnDarkMobile?.setAttribute('aria-pressed','true'));
     }
 
     function applyTheme(mode){
@@ -835,22 +859,26 @@
       applyTheme(stored);
     })();
 
-    // Desktop click handlers
-    btnAuto.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'auto');  applyTheme('auto');  });
-    btnLight.addEventListener('click', ()=>{ localStorage.setItem(STORAGE_KEY,'light'); applyTheme('light'); });
-    btnDark.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'dark');  applyTheme('dark');  });
+    // Click handlers
+    btnAuto?.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'auto');  applyTheme('auto');  });
+    btnLight?.addEventListener('click', ()=>{ localStorage.setItem(STORAGE_KEY,'light'); applyTheme('light'); });
+    btnDark?.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'dark');  applyTheme('dark');  });
 
-    // Mobile click handlers
-    btnAutoMobile.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'auto');  applyTheme('auto');  });
-    btnLightMobile.addEventListener('click', ()=>{ localStorage.setItem(STORAGE_KEY,'light'); applyTheme('light'); });
-    btnDarkMobile.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'dark');  applyTheme('dark');  });
+    btnAutoMobile?.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'auto');  applyTheme('auto');  });
+    btnLightMobile?.addEventListener('click', ()=>{ localStorage.setItem(STORAGE_KEY,'light'); applyTheme('light'); });
+    btnDarkMobile?.addEventListener('click',  ()=>{ localStorage.setItem(STORAGE_KEY,'dark');  applyTheme('dark');  });
 
-    // Smooth scroll for anchor fragments
+    // Smooth scroll for anchor fragments (ignores empty '#')
     document.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
-          const target = document.querySelector(this.getAttribute('href'));
-          if (target) { e.preventDefault(); target.scrollIntoView({behavior:'smooth', block:'start'}); }
+          const href = this.getAttribute('href');
+          if (href === '#' || !href || href.length <= 1) return;
+          const target = document.querySelector(href);
+          if (target) { 
+            e.preventDefault(); 
+            target.scrollIntoView({behavior:'smooth', block:'start'}); 
+          }
         });
       });
     });
